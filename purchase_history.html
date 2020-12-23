@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+
+<link href="/css/reset.css" th:href="@{/css/reset.css}" rel="stylesheet" />
+<link href="/css/style.css" th:href="@{/css/style.css}" rel="stylesheet" />
+
+<title>EAGLE BOOK</title>
+</head>
+<body>
+
+<header th:insert="fragments/page_header::pageHeader"></header>
+
+<main>
+
+	<div class="container history">
+		<div>
+			<h2>購入履歴</h2>
+		</div>
+		<div class="noData hidden">
+			<p class="info">購入履歴はありません。</p>
+		</div>
+		<table class="history">
+			<tr>
+				<th>購入日時</th><th>商品名</th><th>価格(円)</th><th>個数</th><th>宛名</th><th>宛先住所</th>
+			</tr>
+			<tr th:each = "item: ${purchaseHistory}">
+				<td th:text = "${item.purchasedAt}" />
+				<td th:text = "${item.productName}" />
+				<td th:text = "${item.price}" />
+				<td th:text = "${item.productCount}" />
+				<td>
+					<span th:text = "${item.familyName}  +  ' ' + ${item.firstName}"></span>
+				</td>
+				<td class="address" th:text = "${item.address}" />
+			</tr>
+		
+		</table>
+		<div class="buttonArea">
+			<button  class = "deleteBtn">削除</button>
+		</div>
+	
+	</div>
+
+</main>
+
+<script th:inline = "javascript">
+/*<![CDATA[*/
+	$(() => {
+		isExistsPurchaseHistory(false); //引数(削除済)にfalseを指定
+		$('.deleteBtn').on('click', () => {
+			deleteHistory();
+		});
+	});
+	
+	function isExistsPurchaseHistory(deleted) {
+		let purchaseHistorySize = /*[[${purchaseHistory.size()}]]*/ 0;
+		
+		if(purchaseHistorySize == 0 || deleted) {
+			//情報なしメッセージ
+			$('.noData').removeClass('hidden');
+			//テーブルのtrを非表示
+			$('.history tr').remove();
+			//ボタンを非表示
+			$('.buttonArea').remove();
+		}
+	}
+	
+	function deleteHistory() {
+		$.ajax({
+			type: 'POST',
+			url: '/eagle/history/delete',
+		})
+		.then((result) => {
+			isExistsPurchaseHistory(true); //引数(削除済)にtrueを指定
+		}, () => {
+			alert('Error: ajax connection failed.');
+		});
+ }
+	
+</script>
+
+</body>
+
+</html>
