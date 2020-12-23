@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "jp.co.internous.eagle.model.mapper.TblPurchaseHistoryMapper">
+
+<select id = "findByUserId" resultType = "jp.co.internous.eagle.model.domain.dto.PurchaseHistoryDto">
+	
+	<!-- tbl_purchase_history, mst_product, mst_destinationを結合 -->
+	SELECT
+			purchase.purchased_at,
+			product.product_name,
+			purchase.price,
+			purchase.product_count,
+			destination.family_name,
+			destination.first_name,
+			destination.address
+	FROM tbl_purchase_history purchase
+			INNER JOIN
+				mst_product product
+			ON
+				purchase.product_id = product.id
+			INNER JOIN
+				mst_destination destination
+			ON
+				purchase.destination_id = destination.id
+	WHERE
+			purchase.user_id = #{userId} AND purchase.status = 1
+	ORDER BY
+			purchase.purchased_at DESC;
+	
+</select>
+
+<insert id = "insert" useGeneratedKeys = "true" parameterType = "hashmap">
+
+	INSERT INTO tbl_purchase_history
+			(user_id, product_id, product_count, price, destination_id)
+	SELECT
+			cart.user_id, cart.product_id, cart.product_count, product.price, #{destinationId}
+	FROM
+			tbl_cart cart
+	JOIN
+			mst_product product
+	ON
+			cart.product_id = product.id
+	WHERE
+			cart.user_id = #{userId};
+
+</insert>
+
+</mapper>
